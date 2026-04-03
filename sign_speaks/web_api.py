@@ -22,7 +22,7 @@ detector = vision.HandLandmarker.create_from_options(options)
 sequence = deque(maxlen=30)
 predictions = []
 sentence = []
-threshold = 0.45
+threshold = 0.7
 
 app = Flask(__name__)
 CORS(app)
@@ -48,6 +48,7 @@ def predict():
     if frame is None:
         return jsonify({'error': 'Invalid frame image'}), 400
 
+    frame = cv2.flip(frame, 1)
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
     results = detector.detect(mp_image)
@@ -75,17 +76,13 @@ def predict():
     if len(sequence) == 30:
         res = model.predict(np.expand_dims(sequence, axis=0), verbose=0)[0]
         predicted_idx = int(np.argmax(res))
-        top_word = actions[predicted_idx]
-        top_confidence = float(res[predicted_idx])
         predictions.append(predicted_idx)
-
-        output_word = top_word
-        output_confidence = top_confidence
         status = 'Detecting...'
 
-        if len(predictions) >= 8 and np.unique(predictions[-8:])[0] == predicted_idx:
-            if top_confidence > threshold:
-                word = top_word
+        if len(predictions) > 15 and np.unique(predictions[-15:])[0] == predicted_idx:
+            confidence = float(res[predicted_idx])
+            if confidence > threshold:
+                word = actions[predicted_idx]
 
                 if sentence:
                     if word != sentence[-1]:
@@ -97,7 +94,7 @@ def predict():
                     sentence[:] = sentence[-5:]
 
                 output_word = word
-                output_confidence = top_confidence
+                output_confidence = confidence
                 status = 'Stable detection'
 
         if sentence and output_word == '--':
