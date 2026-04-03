@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const SignSpeaksApp());
@@ -15,7 +16,7 @@ class AppColors {
       blurRadius: 20,
       spreadRadius: 1,
       offset: const Offset(0, 4),
-    )
+    ),
   ];
 }
 
@@ -36,7 +37,9 @@ class _SignSpeaksAppState extends State<SignSpeaksApp> {
 
   void toggleTheme() {
     setState(() {
-      _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+      _themeMode = _themeMode == ThemeMode.dark
+          ? ThemeMode.light
+          : ThemeMode.dark;
     });
   }
 
@@ -68,9 +71,7 @@ class _SignSpeaksAppState extends State<SignSpeaksApp> {
         useMaterial3: true,
         fontFamily: 'Roboto',
       ),
-      home: MainScreen(
-        onThemeChanged: toggleTheme,
-      ),
+      home: MainScreen(onThemeChanged: toggleTheme),
     );
   }
 }
@@ -93,8 +94,8 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _pages = [
       const LiveDetectionScreen(),
+      const TextToSignScreen(),
       const HistoryScreen(),
-      const AnalyticsScreen(),
       SettingsScreen(onThemeChanged: widget.onThemeChanged),
     ];
   }
@@ -105,31 +106,32 @@ class _MainScreenState extends State<MainScreen> {
 
     return Scaffold(
       extendBody: true,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: SafeArea(
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.cardBackground.withOpacity(0.9) : Colors.white.withOpacity(0.9),
+            color: isDark
+                ? AppColors.cardBackground.withOpacity(0.9)
+                : Colors.white.withOpacity(0.9),
             borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
-                color: isDark ? AppColors.primary.withOpacity(0.1) : Colors.black12,
+                color: isDark
+                    ? AppColors.primary.withOpacity(0.1)
+                    : Colors.black12,
                 blurRadius: 24,
                 spreadRadius: 2,
-              )
+              ),
             ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildNavItem(Icons.videocam_rounded, 'Live', 0, isDark),
-              _buildNavItem(Icons.history_rounded, 'History', 1, isDark),
-              _buildNavItem(Icons.analytics_rounded, 'Analytics', 2, isDark),
+              _buildNavItem(Icons.text_fields_rounded, 'Text', 1, isDark),
+              _buildNavItem(Icons.history_rounded, 'History', 2, isDark),
               _buildNavItem(Icons.settings_rounded, 'Settings', 3, isDark),
             ],
           ),
@@ -140,7 +142,9 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildNavItem(IconData icon, String label, int index, bool isDark) {
     final isSelected = _currentIndex == index;
-    final color = isSelected ? AppColors.primary : (isDark ? Colors.grey : Colors.black54);
+    final color = isSelected
+        ? AppColors.primary
+        : (isDark ? Colors.grey : Colors.black54);
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -153,7 +157,9 @@ class _MainScreenState extends State<MainScreen> {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.15) : Colors.transparent,
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.15)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -170,7 +176,7 @@ class _MainScreenState extends State<MainScreen> {
                   fontSize: 14,
                 ),
               ),
-            ]
+            ],
           ],
         ),
       ),
@@ -209,31 +215,54 @@ class LiveDetectionScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(AppStyles.cardRadius),
-                    boxShadow: isDark ? AppColors.glowShadow : [
-                      const BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))
-                    ],
-                    border: Border.all(color: AppColors.primary.withOpacity(0.3), width: 2),
+                    boxShadow: isDark
+                        ? AppColors.glowShadow
+                        : [
+                            const BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.3),
+                      width: 2,
+                    ),
                   ),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
                       // Simulated Camera Feed
-                      const Icon(Icons.camera_alt_outlined, color: Colors.white24, size: 80),
+                      const Icon(
+                        Icons.camera_alt_outlined,
+                        color: Colors.white24,
+                        size: 80,
+                      ),
                       // Overlay Bounding Box
                       Positioned(
-                        top: 40, bottom: 40, left: 40, right: 40,
+                        top: 40,
+                        bottom: 40,
+                        left: 40,
+                        right: 40,
                         child: Container(
                           decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.primary, width: 2),
+                            border: Border.all(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
                       ),
                       // Top indicator
                       Positioned(
-                        top: 16, right: 16,
+                        top: 16,
+                        right: 16,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
@@ -242,9 +271,20 @@ class LiveDetectionScreen extends StatelessWidget {
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.circle, color: Colors.redAccent, size: 10),
+                              Icon(
+                                Icons.circle,
+                                color: Colors.redAccent,
+                                size: 10,
+                              ),
                               SizedBox(width: 6),
-                              Text("LIVE", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                              Text(
+                                "LIVE",
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -254,14 +294,21 @@ class LiveDetectionScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Detected Gesture
               Container(
                 padding: AppStyles.cardPadding,
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(AppStyles.cardRadius),
-                  boxShadow: isDark ? [] : [const BoxShadow(color: Colors.black12, blurRadius: 10)],
+                  boxShadow: isDark
+                      ? []
+                      : [
+                          const BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10,
+                          ),
+                        ],
                 ),
                 child: Column(
                   children: [
@@ -278,7 +325,10 @@ class LiveDetectionScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Confidence', style: TextStyle(color: Colors.grey)),
+                        const Text(
+                          'Confidence',
+                          style: TextStyle(color: Colors.grey),
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: ClipRRect(
@@ -292,14 +342,17 @@ class LiveDetectionScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Text('95%', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text(
+                          '95%',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // AI Response Bubble
               Container(
                 padding: const EdgeInsets.all(16),
@@ -315,7 +368,11 @@ class LiveDetectionScreen extends StatelessWidget {
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.auto_awesome, color: AppColors.primary, size: 24),
+                    Icon(
+                      Icons.auto_awesome,
+                      color: AppColors.primary,
+                      size: 24,
+                    ),
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -375,7 +432,8 @@ class HistoryScreen extends StatelessWidget {
                 child: ListView.separated(
                   physics: const BouncingScrollPhysics(),
                   itemCount: dummyHistory.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final item = dummyHistory[index];
                     return Container(
@@ -383,7 +441,14 @@ class HistoryScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: cardColor,
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: isDark ? [] : [const BoxShadow(color: Colors.black12, blurRadius: 5)],
+                        boxShadow: isDark
+                            ? []
+                            : [
+                                const BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 5,
+                                ),
+                              ],
                       ),
                       child: Row(
                         children: [
@@ -393,7 +458,10 @@ class HistoryScreen extends StatelessWidget {
                               color: AppColors.primary.withOpacity(0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.history_edu, color: AppColors.primary),
+                            child: const Icon(
+                              Icons.history_edu,
+                              color: AppColors.primary,
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -402,12 +470,18 @@ class HistoryScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   item['gesture']!,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   item['time']!,
-                                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ],
                             ),
@@ -416,14 +490,21 @@ class HistoryScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.green.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
                                   item['conf']!,
-                                  style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12),
+                                  style: const TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ],
@@ -444,10 +525,17 @@ class HistoryScreen extends StatelessWidget {
 }
 
 // ==========================================
-// 3. ANALYTICS SCREEN
+// 3. TEXT TO SIGN SCREEN
 // ==========================================
-class AnalyticsScreen extends StatelessWidget {
-  const AnalyticsScreen({super.key});
+class TextToSignScreen extends StatelessWidget {
+  const TextToSignScreen({super.key});
+
+  Future<void> _launchURL() async {
+    final Uri url = Uri.parse('https://prvpwhcm-5000.inc1.devtunnels.ms/');
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $url');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -464,78 +552,54 @@ class AnalyticsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  'Analytics',
+                  'Text to Sign Language',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
-                
-                // Weekly Usage (Line Chart with glow)
                 Container(
                   padding: AppStyles.cardPadding,
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius: BorderRadius.circular(AppStyles.cardRadius),
-                    boxShadow: isDark ? AppColors.glowShadow : [
-                      const BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))
-                    ],
+                    boxShadow: isDark
+                        ? []
+                        : [
+                            const BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Weekly Usage', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        height: 120,
-                        width: double.infinity,
-                        child: CustomPaint(
-                          painter: GlowLineChartPainter(
-                            color: AppColors.primary,
-                            isDark: isDark,
+                      const Text(
+                        "Welcome to the Text to Indian Sign Language module of our Signspeaks app. This module converts your given english text into corresponding indian sign language. To experience and use the feature, click the button below. Thanks for choosing our app !",
+                        style: TextStyle(fontSize: 16, height: 1.5),
+                        textAlign: TextAlign.justify,
+                      ),
+                      const SizedBox(height: 32),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: _launchURL,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
+                          child: const Text('Try Text to Sign'),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Mon', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                          Text('Tue', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                          Text('Wed', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                          Text('Thu', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                          Text('Fri', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                          Text('Sat', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                          Text('Sun', style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // Top Gestures (Progress bars)
-                Container(
-                  padding: AppStyles.cardPadding,
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(AppStyles.cardRadius),
-                    boxShadow: isDark ? [] : [const BoxShadow(color: Colors.black12, blurRadius: 10)],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Top Gestures', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 20),
-                      _buildTopGestureProgress('HELLO', 0.85, '342'),
-                      const SizedBox(height: 16),
-                      _buildTopGestureProgress('THANK YOU', 0.65, '215'),
-                      const SizedBox(height: 16),
-                      _buildTopGestureProgress('YES', 0.45, '148'),
-                      const SizedBox(height: 16),
-                      _buildTopGestureProgress('NO', 0.30, '95'),
-                    ],
-                  ),
-                ),
-                
                 const SizedBox(height: 100),
               ],
             ),
@@ -544,124 +608,6 @@ class AnalyticsScreen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildBar(double factor, String label, {bool isToday = false}) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          width: 8,
-          height: 100 * factor,
-          decoration: BoxDecoration(
-            color: isToday ? AppColors.primary : AppColors.primary.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(4),
-            boxShadow: isToday ? [
-              BoxShadow(color: AppColors.primary.withOpacity(0.5), blurRadius: 8, spreadRadius: 1)
-            ] : [],
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: isToday ? AppColors.primary : Colors.grey,
-            fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTopGestureProgress(String title, double progress, String count) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-            Text(count, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.grey.withOpacity(0.2),
-            color: AppColors.primary,
-            minHeight: 6,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class GlowLineChartPainter extends CustomPainter {
-  final Color color;
-  final bool isDark;
-
-  GlowLineChartPainter({required this.color, required this.isDark});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final values = [0.3, 0.5, 0.4, 0.8, 0.6, 0.7, 0.9];
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final glowPaint = Paint()
-      ..color = color.withOpacity(isDark ? 0.3 : 0.1)
-      ..strokeWidth = 10
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path = Path();
-    final stepX = size.width / (values.length - 1);
-    
-    for (int i = 0; i < values.length; i++) {
-        final x = i * stepX;
-        final y = size.height - (values[i] * size.height);
-        
-        if (i == 0) {
-          path.moveTo(x, y);
-        } else {
-          // Smooth curve using cubic to
-          final prevX = (i - 1) * stepX;
-          final prevY = size.height - (values[i - 1] * size.height);
-          final cpX1 = prevX + (stepX / 2);
-          final cpX2 = x - (stepX / 2);
-          path.cubicTo(cpX1, prevY, cpX2, y, x, y);
-        }
-    }
-
-    if (isDark) {
-      canvas.drawPath(path, glowPaint);
-    }
-    canvas.drawPath(path, paint);
-    
-    // Draw dots
-    final dotPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-    
-    final dotOuter = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-      
-    final lastX = (values.length - 1) * stepX;
-    final lastY = size.height - (values.last * size.height);
-    canvas.drawCircle(Offset(lastX, lastY), 6, dotOuter);
-    canvas.drawCircle(Offset(lastX, lastY), 3, dotPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ==========================================
@@ -700,7 +646,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // AI Features Group
                 _buildSectionHeader('AI Features'),
                 Container(
@@ -710,9 +656,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   child: Column(
                     children: [
-                      _buildSwitchTile('Real-time Translation', _realtimeTranslation, (val) => setState(() => _realtimeTranslation = val)),
+                      _buildSwitchTile(
+                        'Real-time Translation',
+                        _realtimeTranslation,
+                        (val) => setState(() => _realtimeTranslation = val),
+                      ),
                       const Divider(height: 1, indent: 20, endIndent: 20),
-                      _buildSwitchTile('Text-to-Speech (Beta)', _textToSpeech, (val) => setState(() => _textToSpeech = val)),
+                      _buildSwitchTile(
+                        'Text-to-Speech (Beta)',
+                        _textToSpeech,
+                        (val) => setState(() => _textToSpeech = val),
+                      ),
                     ],
                   ),
                 ),
@@ -727,24 +681,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   child: Column(
                     children: [
-                      _buildSwitchTile('Camera Enabled', _cameraEnabled, (val) => setState(() => _cameraEnabled = val)),
+                      _buildSwitchTile(
+                        'Camera Enabled',
+                        _cameraEnabled,
+                        (val) => setState(() => _cameraEnabled = val),
+                      ),
                       const Divider(height: 1, indent: 20, endIndent: 20),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('AI Model', style: TextStyle(fontSize: 16)),
+                            const Text(
+                              'AI Model',
+                              style: TextStyle(fontSize: 16),
+                            ),
                             DropdownButton<String>(
                               value: _selectedModel,
                               underline: const SizedBox(),
-                              dropdownColor: isDark ? AppColors.cardBackground : Colors.white,
-                              items: ['Standard AI (Fast)', 'Premium AI (Accurate)'].map((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value, style: const TextStyle(fontSize: 14)),
-                                );
-                              }).toList(),
+                              dropdownColor: isDark
+                                  ? AppColors.cardBackground
+                                  : Colors.white,
+                              items:
+                                  [
+                                    'Standard AI (Fast)',
+                                    'Premium AI (Accurate)',
+                                  ].map((String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(
+                                        value,
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                    );
+                                  }).toList(),
                               onChanged: (newValue) {
                                 if (newValue != null) {
                                   setState(() => _selectedModel = newValue);
@@ -767,8 +740,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     borderRadius: BorderRadius.circular(AppStyles.cardRadius),
                   ),
                   child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                    title: const Text('Dark Theme', style: TextStyle(fontSize: 16)),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
+                    title: const Text(
+                      'Dark Theme',
+                      style: TextStyle(fontSize: 16),
+                    ),
                     trailing: Switch(
                       value: isDark,
                       onChanged: (val) => widget.onThemeChanged(),
@@ -776,7 +755,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 100),
               ],
             ),
@@ -791,12 +770,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.only(left: 8, bottom: 12),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+        style: const TextStyle(
+          color: Colors.grey,
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2,
+        ),
       ),
     );
   }
 
-  Widget _buildSwitchTile(String title, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildSwitchTile(
+    String title,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
     return SwitchListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       title: Text(title, style: const TextStyle(fontSize: 16)),
