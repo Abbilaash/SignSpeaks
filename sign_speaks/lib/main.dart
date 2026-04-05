@@ -513,6 +513,53 @@ class _LiveDetectionScreenState extends State<LiveDetectionScreen> {
     }
   }
 
+  double _cameraAspectRatio() {
+    if (kIsWeb &&
+        _cameraController != null &&
+        _cameraController!.value.isInitialized) {
+      return _cameraController!.value.aspectRatio;
+    }
+    return 4 / 3;
+  }
+
+  Widget _buildCameraPreviewSurface() {
+    final hasWebCamera =
+        kIsWeb && _cameraController != null && _cameraController!.value.isInitialized;
+
+    if (!hasWebCamera) {
+      return const Icon(
+        Icons.camera_alt_outlined,
+        color: Colors.white24,
+        size: 80,
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Center(
+          child: AspectRatio(
+            aspectRatio: _cameraAspectRatio(),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppStyles.cardRadius - 2),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CameraPreview(_cameraController!),
+                  CustomPaint(
+                    painter: _HandLandmarksPainter(
+                      landmarks: _handLandmarks,
+                      color: Colors.greenAccent,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -528,6 +575,11 @@ class _LiveDetectionScreenState extends State<LiveDetectionScreen> {
               const Text(
                 'Live Detection',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Real-time sign recognition with visual hand tracking',
+                style: TextStyle(color: Colors.grey, fontSize: 14),
               ),
               const SizedBox(height: 20),
               Expanded(
@@ -553,31 +605,7 @@ class _LiveDetectionScreenState extends State<LiveDetectionScreen> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      if (kIsWeb &&
-                          _cameraController != null &&
-                          _cameraController!.value.isInitialized)
-                        ClipRRect(
-                          borderRadius:
-                              BorderRadius.circular(AppStyles.cardRadius - 2),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              CameraPreview(_cameraController!),
-                              CustomPaint(
-                                painter: _HandLandmarksPainter(
-                                  landmarks: _handLandmarks,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        const Icon(
-                          Icons.camera_alt_outlined,
-                          color: Colors.white24,
-                          size: 80,
-                        ),
+                      _buildCameraPreviewSurface(),
                       const Positioned(
                         top: 40,
                         bottom: 40,
@@ -647,13 +675,17 @@ class _LiveDetectionScreenState extends State<LiveDetectionScreen> {
                 ),
                 child: Column(
                   children: [
-                    Text(
-                      _detectedWord,
-                      style: const TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2,
-                        color: AppColors.primary,
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      child: Text(
+                        _detectedWord,
+                        key: ValueKey(_detectedWord),
+                        style: const TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -684,10 +716,20 @@ class _LiveDetectionScreenState extends State<LiveDetectionScreen> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      _status,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.grey),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        _status,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
                     ),
                   ],
                 ),
@@ -761,14 +803,42 @@ class _HandLandmarksPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (landmarks.isEmpty) return;
 
-    final paint = Paint()
+    final pointPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
 
+    final linePaint = Paint()
+      ..color = color.withValues(alpha: 0.9)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    final connections = <List<int>>[
+      [0, 1], [1, 2], [2, 3], [3, 4],
+      [0, 5], [5, 6], [6, 7], [7, 8],
+      [5, 9], [9, 10], [10, 11], [11, 12],
+      [9, 13], [13, 14], [14, 15], [15, 16],
+      [13, 17], [17, 18], [18, 19], [19, 20],
+      [0, 17],
+    ];
+
+    Offset toCanvasPoint(Offset point) =>
+        Offset(point.dx * size.width, point.dy * size.height);
+
+    for (final edge in connections) {
+      final startIndex = edge[0];
+      final endIndex = edge[1];
+      if (startIndex >= landmarks.length || endIndex >= landmarks.length) {
+        continue;
+      }
+      canvas.drawLine(
+        toCanvasPoint(landmarks[startIndex]),
+        toCanvasPoint(landmarks[endIndex]),
+        linePaint,
+      );
+    }
+
     for (final point in landmarks) {
-      final x = point.dx * size.width;
-      final y = point.dy * size.height;
-      canvas.drawCircle(Offset(x, y), 4, paint);
+      canvas.drawCircle(toCanvasPoint(point), 4, pointPaint);
     }
   }
 
